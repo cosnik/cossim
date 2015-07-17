@@ -59,12 +59,12 @@ const G4double dTubeLength      = 500*mm;
 
 const G4double dSensorLength    = 100*mm;
 const G4double dSensorWidth     = 100*mm;
-const G4double dSensorThicknes  = 0.3*mm;
+const G4double dSensorThickness = 0.3*mm;
 
 const G4int NumberOfSensors = 4;
-const G4double dXposition[NumberOfSensors] = {0.,0.,0.,0.};
-const G4double dYposition[NumberOfSensors] = {0.,0.,0.,0.};
-const G4double dZposition[NumberOfSensors] = {-320*mm,-250*mm,+250*mm,320*mm};
+const G4double Xposition[NumberOfSensors] = {0.,0.,0.,0.};
+const G4double Yposition[NumberOfSensors] = {0.,0.,0.,0.};
+const G4double Zposition[NumberOfSensors] = {-320*mm,-250*mm,+250*mm,320*mm};
 
 /*----------------------------------------------------------------------------------------------*/
 
@@ -220,16 +220,18 @@ DetectorConstruction::ConstructSD()
     G4String SDname;
     
     // make NaI sensitive
-    //G4VSensitiveDetector* NaI_SD = new SensitiveDetector(SDname="/NaI");
-    //SDman->AddNewDetector(NaI_SD);
-    //m_pNaI_crystal1_LogicalVolume->SetSensitiveDetector(NaI_SD);
-   // m_pNaI_crystal2_LogicalVolume->SetSensitiveDetector(NaI_SD);
+    G4VSensitiveDetector* Silicon_SD = new SensitiveDetector(SDname="/Silicon");
+    SDman->AddNewDetector(Silicon_SD);
+    for(G4int isensor = 0; isensor<NumberOfSensors; isensor++){
+        m_Sensor_LogicalVolume[isensor]->SetSensitiveDetector(NaI_SD);
+    }
+
 
 }
 
 
 void
-DetectorConstruction::ConstructCollimatorSystem()
+DetectorConstruction::ConstructCosmicSetup()
 {
 
     //================================== Materials ===================================
@@ -252,12 +254,7 @@ DetectorConstruction::ConstructCollimatorSystem()
     //
     // G4Tubs("name",R_in,R_out,Length/2,phi_min,phi_max)
     //
-    G4Tubs *p_IronTube			= new G4Tubs("IronTube",
-													dTubeInnerRadius,
-													dTubeOuterRadius,
-													dTubeLength / 2.,
-													0.*deg, 360.*deg);
-    
+    G4Tubs *p_IronTube			= new G4Tubs("IronTube", dTubeInnerRadius, dTubeOuterRadius, dTubeLength/2., 0.*deg, 360.*deg);
     //
     // Define the logical volume
     //
@@ -265,48 +262,38 @@ DetectorConstruction::ConstructCollimatorSystem()
     //
     // Place the logcal volume in the physical world
     //
-    m_IronTube_PhysicalVolume 	= new G4PVPlacement(pRot, G4ThreeVector(0,0,0), m_IronTube_LogicalVolume, "p_IronTube", m_pMotherLogicalVolume, false, 0);
+    m_IronTube_PhysicalVolume 	= new G4PVPlacement(pRot, G4ThreeVector(0,0,0), m_IronTube_LogicalVolume, "IronTube", m_pMotherLogicalVolume, false, 0);
     
     //
     // Silicon telescope
     //
     
-    G4Tubs *pNaI_crystal2			= new G4Tubs("NaI_crystal2",
-                                                 0.*cm,
-                                                 dCrystalRadius,
-                                                 dCrystalHalfZ,
-                                                 0.*deg, 360.*deg);
-    m_pNaI_crystal2_LogicalVolume	= new G4LogicalVolume(pNaI_crystal2, NaI, "NaI_crystalTUBS", 0, 0, 0);
-    m_pNaI_crystal2_PhysicalVolume 	= new G4PVPlacement(pRot, G4ThreeVector(-m_hNaIPosition,0,0), m_pNaI_crystal2_LogicalVolume, "NaI_crystal2", m_pMotherLogicalVolume, false, 0);
+    //
+    // define one silicon sensor
+    //
+    G4Box *p_Sensor = new G4Box("Sensor",dSensorLength/2.,dSensorWidth/2.,dSensorThickness/2.);
     
-    
-    // make and place the source
-    G4cout <<"DetectorConstruction::ConstructCollimatorSystem:: Source at "<<m_hSourcePosition/cm<<" cm" <<G4endl;
-    G4Tubs *pSourceDisk         	 = new G4Tubs("SourceDisk",
-    											0.*cm,
-    											GetGeometryParameter("SourceDisk_R"),
-    											GetGeometryParameter("SourceDisk_Z")/2,
-    											0.*deg, 360.*deg);
-    m_pSourceDisk_LogicalVolume 	 = new G4LogicalVolume(pSourceDisk, Teflon, "SourceDisk", 0, 0, 0);
-    m_pSourceDisk_PhysicalVolume	 = new G4PVPlacement(pRot, G4ThreeVector(0,0,0), m_pSourceDisk_LogicalVolume,
-                                                     "SourceDisk", m_pMotherLogicalVolume, false, 0);
+    //
+    // construct the telescope
+    //
+    char physName[128];
+    for(G4int isensor = 0; isensor<NumberOfSensors; isensor++){
+        G4LogicalVolume * sensor_logical = new G4LogicalVolume("Sensor", Si, "Si_BOX", 0, 0, 0);
+        m_Sensor_LogicalVolume.push_back(sensor_logical);
+        sprintf(physName,"SiSensor%i",isensor);
+        G4VPhysicalVolume * sensor_physical = new G4VPhysicalVolume(0,G4ThreeVector(0,0,Zposition[isensor]),m_Sensor_LogicalVolume[isensor],physName, m_pMotherLogicalVolume, false,0);
+    }
     
 
-    G4Orb *pSourceCore				 = new G4Orb("SourceCore",
-    										GetGeometryParameter("SourceCore_R"));
-    m_pSourceCore_LogicalVolume 	 = new G4LogicalVolume(pSourceCore, Teflon, "SourceCore", 0, 0, 0);
-    m_pSourceCore_PhysicalVolume 	 = new G4PVPlacement(pRot, G4ThreeVector(0,0,0), m_pSourceCore_LogicalVolume,
-                                                     "SourceCore", m_pSourceDisk_LogicalVolume, false, 0);
-
+    //
     // visibility
+    //
     G4Colour hTitaniumColor(0.600, 0.600, 0.600, 0.4);
     G4VisAttributes *pTitaniumVisAtt = new G4VisAttributes(hTitaniumColor);
     pTitaniumVisAtt->SetVisibility(true);
-    m_pNaI_crystal1_LogicalVolume->SetVisAttributes(pTitaniumVisAtt);
-    m_pNaI_crystal2_LogicalVolume->SetVisAttributes(pTitaniumVisAtt);
-    m_pSourceDisk_LogicalVolume -> SetVisAttributes(pTitaniumVisAtt);
+    m_Iron_LogicalVolume->SetVisAttributes(pTitaniumVisAtt);
 
-    G4cout <<"end sysdef"<<G4endl;
+    G4cout <<"DetectorConstruction:: end sysdef"<<G4endl;
 }
 
 

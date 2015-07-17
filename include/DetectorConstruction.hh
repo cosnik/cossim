@@ -42,7 +42,7 @@ private:
     void DefineGeometryParameters();
     
     void ConstructLaboratory();
-    void ConstructCollimatorSystem();
+    void ConstructCosmicSetup();
     // define the sensitive detectors
     void ConstructSD();
     void PrintGeometryInformation();
@@ -56,36 +56,19 @@ private:
     G4LogicalVolume *m_pMotherLogicalVolume;
     G4LogicalVolume *m_pLabLogicalVolume;
     
-    // NaI detector setup
-    G4LogicalVolume *m_pNaI_crystal1_LogicalVolume;
-    G4LogicalVolume *m_pNaI_crystal2_LogicalVolume;
-    G4LogicalVolume *m_pCollimator_LogicalVolume;
-    
-    // Source
-    G4LogicalVolume *m_pSourceDisk_LogicalVolume;
-    G4LogicalVolume *m_pSourceCore_LogicalVolume;
-    
-
+    // == Iron TUBE
+    G4LogicalVolume *m_IronTube_LogicalVolume;
+    vector<G4LogicalVolume*> m_Sensor_LogicalVolume;
 
     // == PHYSICAL VOLUMES ==
     G4VPhysicalVolume *m_pLabPhysicalVolume;
-
-    // Collimator setup
-    G4VPhysicalVolume *m_pNaI_crystal1_PhysicalVolume;
-    G4VPhysicalVolume *m_pNaI_crystal2_PhysicalVolume;
-    G4VPhysicalVolume *	m_pCollimator_PhysicalVolume;
-    
-    // Source
-    G4VPhysicalVolume *m_pSourceDisk_PhysicalVolume;
-    G4VPhysicalVolume *m_pSourceCore_PhysicalVolume;
+    G4VPhysicalVolume *m_IronTube_PhysicalVolume;
+    vector<G4PhysicalVolume*> m_Sensor_PhysicalVolume;
     
     
     static map<G4String, G4double> m_hGeometryParameters;
     
     DetectorMessenger *m_pDetectorMessenger;
-    G4double           m_hSourcePosition;
-    G4double           m_hNaIPosition;
-
     
     // ROOT stuff
     TFile      *_fGeom;
