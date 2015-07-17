@@ -32,8 +32,8 @@ public:
     G4VPhysicalVolume* Construct();
     static G4double GetGeometryParameter(const char *szParameter);
     // function needed by DetectorMessenger
-    void SetSourcePos(G4double x)    { m_hSourcePosition = x; }
-    void SetNaIPos(G4double x)    { m_hNaIPosition = x; }
+//    void SetSourcePos(G4double x)    { m_hSourcePosition = x; }
+//    void SetNaIPos(G4double x)    { m_hNaIPosition = x; }
 
     
     
@@ -63,7 +63,7 @@ private:
     // == PHYSICAL VOLUMES ==
     G4VPhysicalVolume *m_pLabPhysicalVolume;
     G4VPhysicalVolume *m_IronTube_PhysicalVolume;
-    vector<G4PhysicalVolume*> m_Sensor_PhysicalVolume;
+    vector<G4VPhysicalVolume*> m_Sensor_PhysicalVolume;
     
     
     static map<G4String, G4double> m_hGeometryParameters;

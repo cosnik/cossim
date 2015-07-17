@@ -8,6 +8,8 @@
 #include <G4Timer.hh>
 #include <G4ThreeVector.hh>
 
+using std::vector;
+
 class G4Run;
 class G4Event;
 class G4Step;
@@ -40,8 +42,7 @@ private:
     G4bool FilterEvent(EventData *pEventData);
     
 private:
-    G4int m_LXeCollectionID;
-    G4int m_NaICollectionID;
+    G4int m_SiCollectionID;
     vector<G4int> m_CollectionIDs;
     
     G4String m_hDataFilename;

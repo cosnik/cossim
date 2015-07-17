@@ -46,6 +46,7 @@ using std::max;
 #include "TFile.h"
 #include "TParameter.h"
 
+using namespace CLHEP;
 /*----------------------------------------------------------------------------------------------*/
 
 // define geometry parameters here - there are better ways but this will do for now
@@ -69,7 +70,6 @@ const G4double Zposition[NumberOfSensors] = {-320*mm,-250*mm,+250*mm,320*mm};
 /*----------------------------------------------------------------------------------------------*/
 
 
-using namespace CLHEP;
 
 map<G4String, G4double> DetectorConstruction::m_hGeometryParameters;
 
@@ -96,7 +96,7 @@ DetectorConstruction::Construct()
     // construction of the geometry
     ConstructLaboratory();
     // Iron tube + silicon detectors
-    ConstructCollimatorSystem();
+    ConstructCosmicSetup();
     // make the appropriate components active
     ConstructSD();
     
@@ -110,25 +110,25 @@ DetectorConstruction::Construct()
 void
 DetectorConstruction::DefineMaterials()
 {
-    G4NistManager* pNistManager = G4NistManager::Instance();
+//    G4NistManager* pNistManager = G4NistManager::Instance();
     
     //================================== elements ===================================
-    pNistManager->FindOrBuildElement("U");
-    G4Element *Xe = new G4Element("Xenon",     "Xe", 54., 131.293*g/mole);
-    G4Element *H  = new G4Element("Hydrogen",  "H",  1.,  1.0079*g/mole);
-    G4Element *C  = new G4Element("Carbon",    "C",  6.,  12.011*g/mole);
-    G4Element *N  = new G4Element("Nitrogen",  "N",  7.,  14.007*g/mole);
-    G4Element *O  = new G4Element("Oxygen",    "O",  8.,  15.999*g/mole);
-    G4Element *F  = new G4Element("Fluorine",  "F",  9.,  18.998*g/mole);
+//    pNistManager->FindOrBuildElement("U");
+//    G4Element *Xe = new G4Element("Xenon",     "Xe", 54., 131.293*g/mole);
+//    G4Element *H  = new G4Element("Hydrogen",  "H",  1.,  1.0079*g/mole);
+//    G4Element *C  = new G4Element("Carbon",    "C",  6.,  12.011*g/mole);
+//    G4Element *N  = new G4Element("Nitrogen",  "N",  7.,  14.007*g/mole);
+//    G4Element *O  = new G4Element("Oxygen",    "O",  8.,  15.999*g/mole);
+//    G4Element *F  = new G4Element("Fluorine",  "F",  9.,  18.998*g/mole);
     //	G4Element *Al = new G4Element("Aluminium", "Al", 13., 26.982*g/mole);
-    G4Element *Si = new G4Element("Silicon",   "Si", 14., 28.086*g/mole);
-    G4Element *Cr = new G4Element("Chromium",  "Cr", 24., 51.996*g/mole);
-    G4Element *Mn = new G4Element("Manganese", "Mn", 25., 54.938*g/mole);
-    G4Element *Fe = new G4Element("Iron",      "Fe", 26., 55.85*g/mole);
-    G4Element *Ni = new G4Element("Nickel",    "Ni", 28., 58.693*g/mole);
+//    G4Element *Si = new G4Element("Silicon",   "Si", 14., 28.086*g/mole);
+//    G4Element *Cr = new G4Element("Chromium",  "Cr", 24., 51.996*g/mole);
+//    G4Element *Mn = new G4Element("Manganese", "Mn", 25., 54.938*g/mole);
+//    G4Element *Fe = new G4Element("Iron",      "Fe", 26., 55.85*g/mole);
+//    G4Element *Ni = new G4Element("Nickel",    "Ni", 28., 58.693*g/mole);
     
-    G4Element *Na = pNistManager->FindOrBuildElement("Na");
-    G4Element *I  = pNistManager->FindOrBuildElement("I");
+//    G4Element *Na = pNistManager->FindOrBuildElement("Na");
+//    G4Element *I  = pNistManager->FindOrBuildElement("I");
     //================================== materials ==================================
     
     //------------------------------------- air -------------------------------------
@@ -196,13 +196,9 @@ DetectorConstruction::ConstructLaboratory()
     //================================== Laboratory =================================
     const G4double dLabHalfSize = 0.5*GetGeometryParameter("LabSize");
     
-    //G4Material *Air = G4Material::GetMaterial("G4_AIR");
     G4NistManager* pNistManager = G4NistManager::Instance();
 
     G4Material *Air = pNistManager->FindOrBuildMaterial("G4_AIR");
-
-    
-    //G4Material *Air = G4Material::GetMaterial("G4_AIR");
     
     G4Box *pLabBox         = new G4Box("LabBox", dLabHalfSize, dLabHalfSize, dLabHalfSize);
     m_pLabLogicalVolume    = new G4LogicalVolume(pLabBox, Air, "LabVolume", 0, 0, 0);
@@ -220,12 +216,13 @@ DetectorConstruction::ConstructSD()
     G4String SDname;
     
     // make NaI sensitive
-    G4VSensitiveDetector* Silicon_SD = new SensitiveDetector(SDname="/Silicon");
-    SDman->AddNewDetector(Silicon_SD);
+    char sdname[128];
     for(G4int isensor = 0; isensor<NumberOfSensors; isensor++){
-        m_Sensor_LogicalVolume[isensor]->SetSensitiveDetector(NaI_SD);
+      sprintf(sdname,"/Silicon%i",isensor);
+      G4VSensitiveDetector* Silicon_SD = new SensitiveDetector(SDname=sdname);
+      SDman->AddNewDetector(Silicon_SD);
+      m_Sensor_LogicalVolume[isensor]->SetSensitiveDetector(Silicon_SD);
     }
-
 
 }
 
@@ -236,9 +233,8 @@ DetectorConstruction::ConstructCosmicSetup()
 
     //================================== Materials ===================================
     G4NistManager* pNistManager = G4NistManager::Instance();
-    G4Material *Air = pNistManager->FindOrBuildMaterial("G4_AIR");
-    G4Material *Si = pNistManager->FindOrBuildMaterial("Si");
-    G4Material *Fe = pNistManager->FindOrBuildMaterial("Fe");
+    G4Material *Si = pNistManager->FindOrBuildMaterial("G4_Si");
+    G4Material *Fe = pNistManager->FindOrBuildMaterial("G4_Fe");
 
     
     //================================== Rotation matrices ============================
@@ -276,12 +272,12 @@ DetectorConstruction::ConstructCosmicSetup()
     //
     // construct the telescope
     //
-    char physName[128];
+    char physName[128], logName[128];
     for(G4int isensor = 0; isensor<NumberOfSensors; isensor++){
-        G4LogicalVolume * sensor_logical = new G4LogicalVolume("Sensor", Si, "Si_BOX", 0, 0, 0);
-        m_Sensor_LogicalVolume.push_back(sensor_logical);
+        sprintf(logName,"Si_BOX");
+        m_Sensor_LogicalVolume.push_back(new G4LogicalVolume(p_Sensor, Si, logName, 0, 0, 0));
         sprintf(physName,"SiSensor%i",isensor);
-        G4VPhysicalVolume * sensor_physical = new G4VPhysicalVolume(0,G4ThreeVector(0,0,Zposition[isensor]),m_Sensor_LogicalVolume[isensor],physName, m_pMotherLogicalVolume, false,0);
+        m_Sensor_PhysicalVolume.push_back(new G4PVPlacement(0,G4ThreeVector(0,0,Zposition[isensor]),m_Sensor_LogicalVolume[isensor],physName, m_pMotherLogicalVolume, false,0));
     }
     
 
@@ -291,7 +287,7 @@ DetectorConstruction::ConstructCosmicSetup()
     G4Colour hTitaniumColor(0.600, 0.600, 0.600, 0.4);
     G4VisAttributes *pTitaniumVisAtt = new G4VisAttributes(hTitaniumColor);
     pTitaniumVisAtt->SetVisibility(true);
-    m_Iron_LogicalVolume->SetVisAttributes(pTitaniumVisAtt);
+    m_IronTube_LogicalVolume->SetVisAttributes(pTitaniumVisAtt);
 
     G4cout <<"DetectorConstruction:: end sysdef"<<G4endl;
 }

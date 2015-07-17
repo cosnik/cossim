@@ -43,6 +43,6 @@ DetectorMessenger::~DetectorMessenger()
 void DetectorMessenger::SetNewValue(G4UIcommand *pUIcommand, G4String hNewValue)
 {    
     // NaI position
-    if(pUIcommand == m_pNaIPosCmd)
-        m_pDetector->SetNaIPos((m_pNaIPosCmd->GetNewDoubleValue(hNewValue)));
+//    if(pUIcommand == m_pNaIPosCmd)
+//        m_pDetector->SetNaIPos((m_pNaIPosCmd->GetNewDoubleValue(hNewValue)));
 }

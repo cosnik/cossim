@@ -4,6 +4,8 @@
 #include <G4UImessenger.hh>
 #include <globals.hh>
 
+using std::vector;
+
 class AnalysisManager;
 
 class G4UIcommand;

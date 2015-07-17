@@ -5,6 +5,8 @@
 
 #include "AnalysisManager.hh"
 
+using std::vector;
+
 class G4Event;
 
 class EventAction : public G4UserEventAction

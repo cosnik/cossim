@@ -35,8 +35,7 @@ AnalysisManager::AnalysisManager(PrimaryGeneratorAction *pPrimaryGeneratorAction
     runTime = new G4Timer();
     m_CollectionIDs.clear();
     
-    m_LXeCollectionID = -1;
-    m_NaICollectionID = -1;
+    m_SiCollectionID = -1;
     m_hDataFilename = "events.root";
     
     m_pPrimaryGeneratorAction = pPrimaryGeneratorAction;
@@ -131,15 +130,16 @@ void
 AnalysisManager::BeginOfEvent(const G4Event *)
 {
     // only d this if teh collection has not yet been defined yet
-    if(m_NaICollectionID == -1)
+    char idname[128];
+    if(m_SiCollectionID == -1)
     {
-        G4SDManager *pSDManager = G4SDManager::GetSDMpointer();
-        //m_LXeCollectionID = pSDManager->GetCollectionID("LXe/HitsCollection");
-        //m_CollectionIDs.push_back(m_LXeCollectionID);
-        m_NaICollectionID = pSDManager->GetCollectionID("NaI/HitsCollection");
-        m_CollectionIDs.push_back(m_NaICollectionID);
-        //G4cout << "AnalysisManager::BeginOfEvent  Found LXe collection at ID = " << m_LXeCollectionID <<G4endl;
-        G4cout << "AnalysisManager::BeginOfEvent  Found NaI collection at ID = " << m_NaICollectionID <<G4endl;
+        for(G4int idet=0; idet<4; idet++){
+           sprintf(idname,"Silicon%i/HitsCollection",idet);
+           G4SDManager *pSDManager = G4SDManager::GetSDMpointer();
+           m_SiCollectionID = pSDManager->GetCollectionID(idname);
+           m_CollectionIDs.push_back(m_SiCollectionID);
+        }
+        G4cout << "AnalysisManager::BeginOfEvent  Found Silicon collection at ID = " << m_SiCollectionID <<G4endl;
     }
     
 }
@@ -173,7 +173,7 @@ AnalysisManager::EndOfEvent(const G4Event *pEvent)
         //
         // loop over all our hit collections
         //
-        for(G4int icol=0; icol<m_CollectionIDs.size(); icol++){
+        for(G4int icol=0; icol<(G4int)m_CollectionIDs.size(); icol++){
             // check if the ID of the collection is OK
             if(m_CollectionIDs[icol] != -1){
                 stdHitsCollection* pHitsCollection = 0;

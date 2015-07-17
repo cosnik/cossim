@@ -1,17 +1,20 @@
 #include "G4Event.hh"
 #include "G4GeneralParticleSource.hh"
+#include "G4ParticleGun.hh"
 #include "G4StackManager.hh"
 #include "G4RunManagerKernel.hh"
 
 #include "PrimaryGeneratorAction.hh"
 
+using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(G4String fName)
 : G4VUserPrimaryGeneratorAction(),
 fParticleGun(0)
 {
-    fParticleGun = new G4GeneralParticleSource ();
+    //fParticleGun = new G4GeneralParticleSource ();
+    fParticleGun = new G4ParticleGun ();
     
     // APC added
     m_hParticleTypeOfPrimary = "";
@@ -49,64 +52,55 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-    
-    G4StackManager *pStackManager = (G4RunManagerKernel::GetRunManagerKernel())->GetStackManager();
-    
-    
-    //G4cout << "PrimaryGeneratorAction: track status: "
-    //<< pStackManager->GetNUrgentTrack() << " urgent, "
-    //<< pStackManager->GetNWaitingTrack() << " waiting, "
-    //<< pStackManager->GetNPostponedTrack() << " postponed"
-    //<< G4endl;
+    //
+    // generate a mu-
+    //
+    G4String particleName = "mu-";
+    //
+    //
+    //
+    G4double R = CLHEP::RandFlat::shoot();
+    // azimuth
+    G4double phi  = 2*pi*R;
+    // polar angle
+    R = CLHEP::RandFlat::shoot();
+    G4double cost = pow(1-R,1./3);
+    G4double sint = sqrt(1-cost*cost);
+    // energy
+    R = CLHEP::RandFlat::shoot();
+    G4double energy = pow(1-R,-1./1.7)*GeV;
+
+    // direction of our cosmic...
+    G4double tx = sint*cos(phi);
+    G4double ty = sint*sin(phi);
+    G4double tz = -cost;
+
+    // position of generation: z = 450mm, [x,y] = random tussen +-450mm
+    R = CLHEP::RandFlat::shoot();
+    G4double x = (2*R - 1)*450*mm;
+    R = CLHEP::RandFlat::shoot();
+    G4double y = (2*R - 1)*450*mm;
 
     //
-    // If there are no postponed tracks we generate a new event.
-    // In this way we take care of generating decays in a chain as separate events
+    // setup the event generation with the standard G4ParticleGun
     //
-    if(!pStackManager->GetNPostponedTrack()){
-        // generate an event
-        fParticleGun->GeneratePrimaryVertex(anEvent);
-        // particle name of primary
-        m_hParticleTypeOfPrimary = fParticleGun->GetParticleDefinition()->GetParticleName();
-        // kinetic energy of primary
-        m_dEnergyOfPrimary       = fParticleGun->GetParticleEnergy();
-        // position of primary
-        m_hPositionOfPrimary     = fParticleGun->GetParticlePosition();
-        // direction of primary
-        m_hDirectionOfPrimary    = fParticleGun->GetParticleMomentumDirection();
-    } else {
-        
-        // compose the postponed event.....
-        
-        pStackManager->TransferStackedTracks(fPostpone, fUrgent);
-        G4VTrajectory* pTrajectory;
-        G4Track *pTrack = pStackManager->PopNextTrack(&pTrajectory);
-        
-        G4double dPX = pTrack->GetMomentum().x();
-        G4double dPY = pTrack->GetMomentum().y();
-        G4double dPZ = pTrack->GetMomentum().z();
-        
-        G4PrimaryVertex *pVertex = new G4PrimaryVertex(pTrack->GetPosition(), 0.);
-        
-        G4PrimaryParticle *pPrimary = new G4PrimaryParticle(pTrack->GetDefinition(), dPX, dPY, dPZ);
-        pPrimary->SetMass(pTrack->GetDefinition()->GetPDGMass());
-        pPrimary->SetCharge(pTrack->GetDefinition()->GetPDGCharge());
-        
-        pVertex->SetPrimary(pPrimary);
-        anEvent->AddPrimaryVertex(pVertex);
-        
-        // particle name of primary
-        m_hParticleTypeOfPrimary = pTrack->GetParticleDefinition()->GetParticleName();
-        // kinetic energy of primary
-        m_dEnergyOfPrimary       = pTrack->GetKineticEnergy();
-        // position of primary
-        m_hPositionOfPrimary     = pTrack->GetPosition();
-        // direction of primary
-        m_hDirectionOfPrimary    = pTrack->GetMomentumDirection();
+    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleDefinition* particle = particleTable->FindParticle(particleName);
+    fParticleGun->SetParticleDefinition(particle);
+    fParticleGun->SetParticleEnergy(energy);
+    fParticleGun->SetParticlePosition(G4ThreeVector(x,y,450.*mm));
+    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(tx,ty,tz));
 
-        delete pTrack;
-    }
-
+    // generate an event
+    fParticleGun->GeneratePrimaryVertex(anEvent);
+    // particle name of primary
+    m_hParticleTypeOfPrimary = fParticleGun->GetParticleDefinition()->GetParticleName();
+    // kinetic energy of primary
+    m_dEnergyOfPrimary       = fParticleGun->GetParticleEnergy();
+    // position of primary
+    m_hPositionOfPrimary     = fParticleGun->GetParticlePosition();
+    // direction of primary
+    m_hDirectionOfPrimary    = fParticleGun->GetParticleMomentumDirection();
     
     // fill histograms
     _energy_accept->Fill(m_dEnergyOfPrimary);

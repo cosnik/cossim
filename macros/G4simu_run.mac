@@ -3,14 +3,14 @@
 /event/verbose    0
 /tracking/verbose 0
 
-/run/random/setRandomSeed 12346
+/run/random/setRandomSeed 12345
 
-/gps/pos/type    Volume
-/gps/pos/shape   Sphere
-/gps/pos/centre  0. 0. 0. cm
-/gps/pos/radius  1 cm
-/gps/pos/confine SourceCore
-/gps/ang/type   iso
+#/gps/pos/type    Volume
+#/gps/pos/shape   Sphere
+#/gps/pos/centre  0. 0. 0. cm
+#/gps/pos/radius  1 cm
+#/gps/pos/confine SourceCore
+#/gps/ang/type   iso
 #/gps/energy 0. eV
 #/gps/energy 10. MeV
 # /gps/particle e+
@@ -18,8 +18,8 @@
 
 #/gps/pos/type    Point
 #/gps/particle mu-  
-#/gps/position 0 0 0
-#/gps/direction 1 0 0
+#/gps/position 0 0 450 
+#/gps/direction 0 0 -1
 #/gps/energy 10 GeV
 
 #/gps/particle gamma
@@ -27,18 +27,18 @@
 #/gps/direction 1 0 0
 #/gps/energy 511 keV
 
-/grdm/BRbias 0
-/grdm/fBeta 0
-/grdm/verbose 0
-/grdm/analogueMC 1
+#/grdm/BRbias 0
+#/grdm/fBeta 0
+#/grdm/verbose 0
+#/grdm/analogueMC 1
 
 
 #
 #/gps/position 0 0 0
-/gps/energy 0. eV
+#/gps/energy 0. eV
 # 60Co
 #/gps/ion 27 60
 # 44Ti
-/gps/ion 22 44
+#/gps/ion 22 44
 # 137Cs
 #/gps/ion 55 137
