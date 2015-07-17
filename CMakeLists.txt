@@ -1,4 +1,5 @@
 # $Id: CMakeLists.txt 68058 2013-03-13 14:47:43Z gcosmo $
+# xx
 
 #----------------------------------------------------------------------------
 # Setup the project
@@ -29,6 +30,18 @@ find_package(ROOT REQUIRED)
 message(STATUS " ROOT include dirs " ${ROOT_INCLUDE_DIR})
 message(STATUS " ROOT libraries " ${ROOT_LIBRARIES})
 
+# Johns addition to make it work for ROOT6
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
@@ -48,9 +61,11 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-set(CMAKE_CXX_FLAGS "-Wno-shadow " )
+#set(CMAKE_CXX_FLAGS "-Wno-shadow -std=gnu++0x -std=c++0x" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow " )
+#set(CMAKE_CXX_FLAGS " -Wno-shadow " )
 add_executable(G4simu G4simu.cc ${sources} ${headers})
-target_link_libraries(G4simu ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(G4simu ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} -std=c++0x)
 # target_link_libraries(G4simu ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
