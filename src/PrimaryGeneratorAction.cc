@@ -64,7 +64,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double phi  = 2*pi*R;
     // polar angle
     R = CLHEP::RandFlat::shoot();
-    G4double cost = pow(1-R,1./3);
+    G4double cost = pow(1-0.5*R,1./3);
     G4double sint = sqrt(1-cost*cost);
     // energy
     R = CLHEP::RandFlat::shoot();
@@ -75,11 +75,13 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double ty = sint*sin(phi);
     G4double tz = -cost;
 
-    // position of generation: z = 450mm, [x,y] = random tussen +-450mm
+    // position of generation: z = 350mm, [x,y] = random tussen +-100mm
     R = CLHEP::RandFlat::shoot();
-    G4double x = (2*R - 1)*450*mm;
+    G4double x = (2*R - 1)*400*mm;
     R = CLHEP::RandFlat::shoot();
-    G4double y = (2*R - 1)*450*mm;
+    G4double y = (2*R - 1)*400*mm;
+
+    G4double z = 350*mm;
 
     //
     // setup the event generation with the standard G4ParticleGun
@@ -88,7 +90,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4ParticleDefinition* particle = particleTable->FindParticle(particleName);
     fParticleGun->SetParticleDefinition(particle);
     fParticleGun->SetParticleEnergy(energy);
-    fParticleGun->SetParticlePosition(G4ThreeVector(x,y,450.*mm));
+    fParticleGun->SetParticlePosition(G4ThreeVector(x,y,z));
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(tx,ty,tz));
 
     // generate an event
@@ -104,6 +106,6 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     
     // fill histograms
     _energy_accept->Fill(m_dEnergyOfPrimary);
-    _cost_accept->Fill(m_hDirectionOfPrimary.z());
+    _cost_accept->Fill(cost);
 }
 

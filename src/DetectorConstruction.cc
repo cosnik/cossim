@@ -58,8 +58,8 @@ const G4double dTubeLength      = 500*mm;
 
 // silicon sensors
 
-const G4double dSensorLength    = 100*mm;
-const G4double dSensorWidth     = 100*mm;
+const G4double dSensorLength    = 400*mm;
+const G4double dSensorWidth     = 400*mm;
 const G4double dSensorThickness = 0.3*mm;
 
 const G4int NumberOfSensors = 4;
