@@ -27,7 +27,7 @@
 
 #include "detectorHit.hh"
 
-const double MAX_HIT_DISTANCE = 5.0*mm;
+#define MAX_HIT_DISTANCE 5.0
 
 using namespace CLHEP;
 
@@ -227,14 +227,14 @@ AnalysisManager::EndOfEvent(const G4Event *pEvent)
                         //
                         for(G4int i=0; i<iNbHits; i++) {
                             stdHit *pHit = (*pHitsCollection)[i];
-                            G4ThreeVector xh = phit->GetPosition()/mm;
-                            G4double      ed = phit->GetEnergyDeposited()/keV;
+                            G4ThreeVector xh = pHit->GetPosition()/mm;
+                            G4double      ed = pHit->GetEnergyDeposited()/keV;
                             bool added_hit = false;
                             for(G4int ih=0; ih<(G4int)detHits.size(); ih++){
                                 //
                                 // if the energy deposit is close to the hit add it
                                 //
-                                if (detHits.at(ih).getDistance() < MAX_HIT_DISTANCE && !added_hit) {
+                                if (detHits.at(ih).getDistance(xh) < MAX_HIT_DISTANCE*mm && !added_hit) {
                                     detHits.at(ih).addEnergyDeposit(xh,ed);
                                     added_hit = true;
                                 }
@@ -247,7 +247,7 @@ AnalysisManager::EndOfEvent(const G4Event *pEvent)
                             
                         }
                         
-                        for (G4int ih=0; ih<(G4int)detHit.size(); ih++){
+                        for (G4int ih=0; ih<(G4int)detHits.size(); ih++){
                             //
                             // fill the tree variables
                             //

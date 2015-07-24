@@ -77,9 +77,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
     // position of generation: z = 350mm, [x,y] = random tussen +-100mm
     R = CLHEP::RandFlat::shoot();
-    G4double x = (2*R - 1)*400*mm;
+    G4double x = (2*R - 1)*200*mm;
     R = CLHEP::RandFlat::shoot();
-    G4double y = (2*R - 1)*400*mm;
+    G4double y = (2*R - 1)*200*mm;
 
     G4double z = 350*mm;
 
