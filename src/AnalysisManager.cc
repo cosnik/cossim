@@ -234,7 +234,7 @@ AnalysisManager::EndOfEvent(const G4Event *pEvent)
                                 //
                                 // if the energy deposit is close to the hit add it
                                 //
-                                if (detHits.at(ih).getDistance(xh) < MAX_HIT_DISTANCE*mm && !added_hit) {
+                                if (detHits.at(ih).getDistance(xh) < MAX_HIT_DISTANCE*mm && ed>0 && !added_hit) {
                                     detHits.at(ih).addEnergyDeposit(xh,ed);
                                     added_hit = true;
                                 }
@@ -243,7 +243,7 @@ AnalysisManager::EndOfEvent(const G4Event *pEvent)
                             //
                             // if this hit is not added to an existing detectorHit: make a detectorHit
                             //
-                            if(!added_hit) detHits.push_back(detectorHit(xh,ed));
+                            if(!added_hit && ed>0) detHits.push_back(detectorHit(xh,ed));
                             
                         }
                         
