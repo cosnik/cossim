@@ -19,7 +19,8 @@
 
 class cosana {
 public :
-   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
+   string          outFile;
+   TChain         *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
@@ -58,12 +59,13 @@ public :
    TBranch        *b_ed;   //!
    TBranch        *b_time;   //!
 
-   cosana(TTree *tree=0);
+   cosana(string fname, string out);
+   
    virtual ~cosana();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
-   virtual void     Init(TTree *tree);
+   virtual void     Init(TChain *tree);
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
@@ -72,19 +74,16 @@ public :
 #endif
 
 #ifdef cosana_cxx
-cosana::cosana(TTree *tree) : fChain(0) 
+cosana::cosana(string fname, string out) : fChain(0) 
 {
-// if parameter tree is not specified (or zero), connect the file
-// used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("events.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("events.root");
-      }
-      TDirectory * dir = (TDirectory*)f->Get("events.root:/events");
-      dir->GetObject("evt",tree);
+   char cmd[256];
+   TChain *tree = new TChain("events/evt");
+   sprintf(cmd,"%s*.root",fname.c_str());
+   tree->Add(cmd);
 
-   }
+   // root output file
+   outFile = out; 
+
    Init(tree);
 }
 
@@ -113,7 +112,7 @@ Long64_t cosana::LoadTree(Long64_t entry)
    return centry;
 }
 
-void cosana::Init(TTree *tree)
+void cosana::Init(TChain *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch

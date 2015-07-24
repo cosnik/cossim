@@ -18,9 +18,9 @@ import getopt
 # IMPORTANT: set the variables below according to your own system
 
 # where is the modusim code
-simulation_basedir = "/user/z37/Modulation/modusim"
+simulation_basedir = "/user/z37/fl/cossim"
 # where should the output go
-output_basedir = "/data/atlas/users/acolijn/Modulation/simulation"
+output_basedir = "/data/atlas/users/acolijn/cossim"
 # where should the scripts for running go?
 run_dir = output_basedir + "/macros"
 
@@ -43,7 +43,7 @@ def make_G4preinit_script():
     # EM physics list to select: emlivermore, empenelope
     fout.write('/run/physics/setEMlowEnergyModel emlivermore \n')
     # HAD physics list to select: G4QGSP_BERT or G4QGSP_BERT_HP
-    fout.write('/run/physics/setHadronicModel    G4QGSP_BERT_HP \n')
+    fout.write('/run/physics/setHadronicModel    G4QGSP_BERT \n')
     # do we like to have the physics histograms or not? true OR false
     fout.write('/run/physics/setHistograms true \n')
     # format of the output ntuple = compact OR raw
@@ -67,25 +67,25 @@ def make_G4run_script():
     
     fout.write('/run/random/setRandomSeed '+str(ran_seed)+'\n')
     
-    fout.write('/gps/pos/type    Volume\n')
-    fout.write('/gps/pos/shape   Sphere\n')
-    fout.write('/gps/pos/centre  0. 0. 0. cm\n')
-    fout.write('/gps/pos/radius  1 cm\n')
-    fout.write('/gps/pos/confine SourceCore\n')
-    fout.write('/gps/ang/type   iso\n')
+    fout.write('#/gps/pos/type    Volume\n')
+    fout.write('#/gps/pos/shape   Sphere\n')
+    fout.write('#/gps/pos/centre  0. 0. 0. cm\n')
+    fout.write('#/gps/pos/radius  1 cm\n')
+    fout.write('#/gps/pos/confine SourceCore\n')
+    fout.write('#/gps/ang/type   iso\n')
     
-    fout.write('/grdm/BRbias 0\n')
-    fout.write('/grdm/fBeta 0\n')
-    fout.write('/grdm/verbose 0\n')
-    fout.write('/grdm/analogueMC 1\n')
-    fout.write('/gps/energy 0. eV\n')
+    fout.write('#/grdm/BRbias 0\n')
+    fout.write('#/grdm/fBeta 0\n')
+    fout.write('#/grdm/verbose 0\n')
+    fout.write('#/grdm/analogueMC 1\n')
+    fout.write('#/gps/energy 0. eV\n')
     
-    if   source_name == 'Ti44':
-        fout.write('/gps/ion 22 44 \n')
-    elif source_name == 'Co60':
-        fout.write('/gps/ion 27 60 \n')
-    elif source_name == 'Cs137':
-        fout.write('/gps/ion 55 137 \n')
+#    if   source_name == 'Ti44':
+#        fout.write('#/gps/ion 22 44 \n')
+#    elif source_name == 'Co60':
+#        fout.write('#/gps/ion 27 60 \n')
+#    elif source_name == 'Cs137':
+#        fout.write('#/gps/ion 55 137 \n')
     
     fout.close()
 #--------------------------------------------------------------------------------------------
@@ -104,8 +104,6 @@ def make_shell_script():
     fout.write(' \n')
     fout.write('setupATLAS \n')
     fout.write(' \n')
-    fout.write('localSetupROOT '+ROOT_version+' \n')
-    fout.write(' \n')
     fout.write('source /cvmfs/geant4.cern.ch/etc/login.csh \n')
     fout.write(' \n')
     fout.write('cd /cvmfs/geant4.cern.ch/geant4/'+GEANT4_version+'/x86_64-slc6-gcc48-opt/bin/ \n')
@@ -114,7 +112,9 @@ def make_shell_script():
     fout.write(' \n')
     fout.write('cd '+run_dir+' \n')
     fout.write(' \n')
-    fout.write(simulation_basedir+'/../modusim-build/G4simu -p '+preinit_script+' -f '+run_script+' -n '+str(numberOfEvents)+' -o '+output_root)
+    fout.write('localSetupROOT \n')
+    fout.write(' \n')
+    fout.write(simulation_basedir+'/../cossim-x/G4simu -p '+preinit_script+' -f '+run_script+' -n '+str(numberOfEvents)+' -o '+output_root)
     fout.write(' \n')
     
     fout.close()
@@ -128,21 +128,19 @@ def parseArguments(argv):
     nevent = 0
 
     try:
-        opts, args = getopt.getopt(argv,"s:n:",["source","nevent"])
+        opts, args = getopt.getopt(argv,"n:",["nevent"])
     except getopt.GetoptError:
-        print('runsim.py -s <source_type> -n <number_of_events>')
+        print('runsim.py -n <number_of_events>')
         sys.exit(2)
     
     for opt, arg in opts:
         if opt == '-h':
-            print('runsim.py -s <source_type> -n <number_of_events>')
+            print('runsim.py -n <number_of_events>')
             sys.exit()
-        elif opt in ("-s", "--source"):
-            source = arg
         elif opt in ("-n", "--nevent"):
             nevent = int(arg)
 
-    return source, nevent
+    return nevent
 #--------------------------------------------------------------------------------------------
 def get_random_seed():
     
@@ -168,16 +166,20 @@ def get_random_seed():
     
     return ran_seed
 #--------------------------------------------------------------------------------------------
+def submit_script():
+    cmd = 'qsub -W group_list=detrd -e logfiles -o logfiles -j eo -q long '+shell_script
+    os.system(cmd)
+#--------------------------------------------------------------------------------------------
 # MAIN CODE
 
 # interpret the command line arguments
-source_name, numberOfEvents = parseArguments(sys.argv[1:])
+numberOfEvents = parseArguments(sys.argv[1:])
 
 # generate the random seed
 ran_seed = get_random_seed()
 
 # output structure and files
-output_basename = source_name + "_"+ str(ran_seed)
+output_basename = "cossim_"+ str(ran_seed)
 output_root     = output_basedir+"/"+output_basename + ".root"
 
 # macros and scripts
@@ -195,4 +197,4 @@ make_G4run_script()
 make_shell_script()
 
 # submit the script to stoomboot
-
+submit_script()
