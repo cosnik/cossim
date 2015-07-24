@@ -21,7 +21,7 @@ public:
     // get the position of a hit - calculates the energy weighted mean
     G4ThreeVector getPosition();
     // get the total energy dposited in the hit
-    G4double      getEnergy(){return e_sum};
+    G4double      getEnergy(){return e_sum;};
     // get the distance of the hit to an xyz coordinate
     G4double      getDistance(G4ThreeVector x);
     

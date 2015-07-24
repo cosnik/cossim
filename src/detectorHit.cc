@@ -15,8 +15,8 @@ detectorHit::detectorHit(){
 G4ThreeVector detectorHit::getPosition(){
     
     G4ThreeVector xyz = xyz_sum;
-    if (esum>0){
-        xyz /= esum;
+    if (e_sum>0){
+        xyz /= e_sum;
     } else {
         xyz.set(0.,0.,0);
     }
