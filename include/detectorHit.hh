@@ -16,6 +16,7 @@ class detectorHit{
 public:
     
     detectorHit();
+    detectorHit(G4ThreeVector e_pos, G4double e);
     // add energy deposit
     void          addEnergyDeposit(G4ThreeVector e_pos, G4double e);
     // get the position of a hit - calculates the energy weighted mean

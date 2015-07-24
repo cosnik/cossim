@@ -12,6 +12,14 @@ detectorHit::detectorHit(){
 }
 
 /*-------------------------------------------------------------------------*/
+detectorHit::detectorHit(G4ThreeVector e_pos, G4double e){
+    
+    xyz_sum = e_pos*e;
+    e_sum = e;
+    
+}
+
+/*-------------------------------------------------------------------------*/
 G4ThreeVector detectorHit::getPosition(){
     
     G4ThreeVector xyz = xyz_sum;

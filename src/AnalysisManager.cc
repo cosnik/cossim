@@ -25,6 +25,10 @@
 #include "AnalysisMessenger.hh"
 #include "AnalysisManager.hh"
 
+#include "detectorHit.hh"
+
+const double MAX_HIT_DISTANCE = 5.0*mm;
+
 using namespace CLHEP;
 
 AnalysisManager::AnalysisManager(PrimaryGeneratorAction *pPrimaryGeneratorAction)
@@ -214,40 +218,51 @@ AnalysisManager::EndOfEvent(const G4Event *pEvent)
                         }
                     } else if (m_hTreeType == "compact"){
                         //
-                        // calculate the average position of a hit in each detector
+                        // define a vector of detectorHit
                         //
-                        G4double xx=0;
-                        G4double yy=0;
-                        G4double zz=0;
-                        G4double ee=0;
-                        G4double tt=0;
+                        vector<detectorHit> detHits;
                         
+                        //
+                        // loop over the GEANT4 energy deposits
+                        //
                         for(G4int i=0; i<iNbHits; i++) {
                             stdHit *pHit = (*pHitsCollection)[i];
-                            G4double ed = pHit->GetEnergyDeposited()/keV;
+                            G4ThreeVector xh = phit->GetPosition()/mm;
+                            G4double      ed = phit->GetEnergyDeposited()/keV;
+                            bool added_hit = false;
+                            for(G4int ih=0; ih<(G4int)detHits.size(); ih++){
+                                //
+                                // if the energy deposit is close to the hit add it
+                                //
+                                if (detHits.at(ih).getDistance() < MAX_HIT_DISTANCE && !added_hit) {
+                                    detHits.at(ih).addEnergyDeposit(xh,ed);
+                                    added_hit = true;
+                                }
+                            }
                             
-                            xx += pHit->GetPosition().x()/mm * ed;
-                            yy += pHit->GetPosition().y()/mm * ed;
-                            zz += pHit->GetPosition().z()/mm * ed;
-                            tt += pHit->GetTime()/second *ed;
-                            ee += ed;
+                            //
+                            // if this hit is not added to an existing detectorHit: make a detectorHit
+                            //
+                            if(!added_hit) detHits.push_back(detectorHit(xh,ed));
+                            
                         }
-                        if(ee!=0){
-                            xx /= ee;
-                            yy /= ee;
-                            zz /= ee;
-                            tt /= ee;
-                        }
-                        // fill the tree variables
-                        m_pEventData->m_pCollectionId->push_back(icol);
-                        m_pEventData->m_pEnergyDeposited->push_back(ee);
-                        m_pEventData->m_pX->push_back(xx);
-                        m_pEventData->m_pY->push_back(yy);
-                        m_pEventData->m_pZ->push_back(zz);
-                        m_pEventData->m_pTime->push_back(tt);
+                        
+                        for (G4int ih=0; ih<(G4int)detHit.size(); ih++){
+                            //
+                            // fill the tree variables
+                            //
+                            
+                            detectorHit detHit = detHits.at(ih);
+                            
+                            m_pEventData->m_pCollectionId->push_back(icol);
+                            m_pEventData->m_pEnergyDeposited->push_back(detHit.getEnergy());
+                            m_pEventData->m_pX->push_back(detHit.getPosition().x());
+                            m_pEventData->m_pY->push_back(detHit.getPosition().y());
+                            m_pEventData->m_pZ->push_back(detHit.getPosition().z());
+                            m_pEventData->m_pTime->push_back(-1);
 
-                        fTotalEnergyDeposited += ee;
-                                                
+                            fTotalEnergyDeposited += detHit.getEnergy();
+                        }
                     } else {
                         G4cout <<"AnalysisManager::EndOfEvent ERROR: wrong Tree type selected"<<G4endl;
                         return;
