@@ -200,19 +200,24 @@ PhysicsList::SetCuts()
     }
     
     //special for low energy physics
-    G4double lowlimit = 250 * eV;
+//    G4double lowlimit = 250 * eV;
     
-    G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(lowlimit,
-                                                                    100. * GeV);
+//    G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(lowlimit,
+//                                                                    100. * GeV);
     
     // set cut values for gamma at first and for e- second and next for e+,
     // because some processes for e+/e- need cut values for gamma
-    SetCutValue(cutForGamma, "gamma");
-    SetCutValue(cutForElectron, "e-");
-    SetCutValue(cutForPositron, "e+");
+//    SetCutValue(cutForGamma, "gamma");
+//    SetCutValue(cutForElectron, "e-");
+//    SetCutValue(cutForPositron, "e+");
     
     if(verboseLevel > 0)
         DumpCutValuesTable();
+    //
+    // to avoid funky effects, I set the range cuts in GEANT4 to default. If you
+    // want to do something else be carefull.
+    //
+    SetCutsWithDefault(); 
 }
 
 //__________________________________________________________________________________________________________

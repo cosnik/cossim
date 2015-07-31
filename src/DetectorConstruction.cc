@@ -53,7 +53,7 @@ using namespace CLHEP;
 
 // iron tube
 const G4double dTubeInnerRadius = 100*mm;
-const G4double dTubeOuterRadius = 110*mm;
+const G4double dTubeOuterRadius = 101*mm;
 const G4double dTubeLength      = 500*mm;
 
 // silicon sensors
@@ -250,6 +250,7 @@ DetectorConstruction::ConstructCosmicSetup()
     //
     // G4Tubs("name",R_in,R_out,Length/2,phi_min,phi_max)
     //
+//    G4Tubs *p_IronTube			= new G4Tubs("IronTube", dTubeInnerRadius, dTubeOuterRadius, dTubeLength/2., -90.*deg, 180.*deg);
     G4Tubs *p_IronTube			= new G4Tubs("IronTube", dTubeInnerRadius, dTubeOuterRadius, dTubeLength/2., 0.*deg, 360.*deg);
     //
     // Define the logical volume
