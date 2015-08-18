@@ -33,7 +33,8 @@ fParticleGun(0)
     _cost_all      = new TH1F("_cost_all","_cost_all",100,-1,1);
     _energy_all    = new TH1F("_energy_all","_energy_all",1000,0,5);
     
-    _cost_accept   = new TH1F("_cost_accept","_cost_accept",100,-1,1);
+    _phi_accept    = new TH1F("_phi_accept","_phi_accept",100,-0.5,2*pi+0.5);
+    _cost_accept   = new TH1F("_cost_accept","_cost_accept",100,-1.1,1.1);
     _energy_accept = new TH1F("_energy_accept","_energy_accept",1000,0,5);
 }
 
@@ -65,6 +66,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // polar angle
     R = CLHEP::RandFlat::shoot();
     G4double cost = pow(1-0.5*R,1./3);
+//    G4double cost = (1.-2.*R);
     G4double sint = sqrt(1-cost*cost);
     // energy
     R = CLHEP::RandFlat::shoot();
@@ -74,14 +76,17 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4double tx = sint*cos(phi);
     G4double ty = sint*sin(phi);
     G4double tz = -cost;
+    //G4double tx = 0;
+    //G4double ty = 0;
+    //G4double tz = -1.0;
 
-    // position of generation: z = 350mm, [x,y] = random tussen +-100mm
+    // position of generation: z = 350mm, [x,y] = random tussen +-210mm
     R = CLHEP::RandFlat::shoot();
-    G4double x = (2*R - 1)*200*mm;
+    G4double x = (2*R - 1)*225*mm;
     R = CLHEP::RandFlat::shoot();
-    G4double y = (2*R - 1)*200*mm;
+    G4double y = (2*R - 1)*225*mm;
 
-    G4double z = 350*mm;
+    G4double z = 325*mm;
 
     //
     // setup the event generation with the standard G4ParticleGun
@@ -106,6 +111,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     
     // fill histograms
     _energy_accept->Fill(m_dEnergyOfPrimary);
+    _phi_accept->Fill(phi);
     _cost_accept->Fill(cost);
 }
 

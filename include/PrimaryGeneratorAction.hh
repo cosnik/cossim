@@ -44,6 +44,7 @@ private:
 
   TH1F       *_log_primary_w;
   TH1F       *_cost_all;
+  TH1F       *_phi_accept;
   TH1F       *_cost_accept;
   TH1F       *_energy_all;
   TH1F       *_energy_accept;

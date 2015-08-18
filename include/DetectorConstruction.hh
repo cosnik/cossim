@@ -59,10 +59,13 @@ private:
     // == Iron TUBE
     G4LogicalVolume *m_IronTube_LogicalVolume;
     vector<G4LogicalVolume*> m_Sensor_LogicalVolume;
+    // == Iron insert bar in the tube 
+    G4LogicalVolume *m_IronInsert_LogicalVolume;
 
     // == PHYSICAL VOLUMES ==
     G4VPhysicalVolume *m_pLabPhysicalVolume;
     G4VPhysicalVolume *m_IronTube_PhysicalVolume;
+    G4VPhysicalVolume *m_IronInsert_PhysicalVolume;
     vector<G4VPhysicalVolume*> m_Sensor_PhysicalVolume;
     
     

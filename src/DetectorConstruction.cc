@@ -53,8 +53,13 @@ using namespace CLHEP;
 
 // iron tube
 const G4double dTubeInnerRadius = 100*mm;
-const G4double dTubeOuterRadius = 101*mm;
+const G4double dTubeOuterRadius = 110*mm;
 const G4double dTubeLength      = 500*mm;
+
+// iron insert to be placed inside the iron tube.. off center at dInsertPosition 
+const G4double dInsertOuterRadius = 5*mm;
+const G4double dInsertLength      = 500*mm;
+const G4double dInsertPosition    = 60*mm;
 
 // silicon sensors
 
@@ -65,7 +70,7 @@ const G4double dSensorThickness = 0.3*mm;
 const G4int NumberOfSensors = 4;
 const G4double Xposition[NumberOfSensors] = {0.,0.,0.,0.};
 const G4double Yposition[NumberOfSensors] = {0.,0.,0.,0.};
-const G4double Zposition[NumberOfSensors] = {-320*mm,-250*mm,+250*mm,320*mm};
+const G4double Zposition[NumberOfSensors] = {-320*mm,-250*mm,+250*mm,+320*mm};
 
 /*----------------------------------------------------------------------------------------------*/
 
@@ -250,7 +255,6 @@ DetectorConstruction::ConstructCosmicSetup()
     //
     // G4Tubs("name",R_in,R_out,Length/2,phi_min,phi_max)
     //
-//    G4Tubs *p_IronTube			= new G4Tubs("IronTube", dTubeInnerRadius, dTubeOuterRadius, dTubeLength/2., -90.*deg, 180.*deg);
     G4Tubs *p_IronTube			= new G4Tubs("IronTube", dTubeInnerRadius, dTubeOuterRadius, dTubeLength/2., 0.*deg, 360.*deg);
     //
     // Define the logical volume
@@ -259,8 +263,22 @@ DetectorConstruction::ConstructCosmicSetup()
     //
     // Place the logcal volume in the physical world
     //
-    m_IronTube_PhysicalVolume 	= new G4PVPlacement(pRot, G4ThreeVector(0,0,0), m_IronTube_LogicalVolume, "IronTube", m_pMotherLogicalVolume, false, 0);
+    m_IronTube_PhysicalVolume 	= new G4PVPlacement(pRot, G4ThreeVector(0,0,0), m_IronTube_LogicalVolume, 
+                                                    "IronTube", m_pMotherLogicalVolume, false, 0);
     
+    //
+    // IRON INSERT
+    //
+    G4Tubs *p_IronInsert	= new G4Tubs("IronInsert", 0, dInsertOuterRadius, dInsertLength/2., 0.*deg, 360.*deg);
+    //
+    // Define the logical volume
+    //
+    m_IronInsert_LogicalVolume	= new G4LogicalVolume(p_IronInsert, Fe, "Fe_TUBS", 0, 0, 0);
+    //
+    // Place the logcal volume in the physical world
+    //
+    m_IronInsert_PhysicalVolume = new G4PVPlacement(pRot, G4ThreeVector(0,dInsertPosition,0), m_IronInsert_LogicalVolume, 
+                                                    "IronInsert", m_pMotherLogicalVolume, false, 0);
     //
     // Silicon telescope
     //
